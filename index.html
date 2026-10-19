@@ -9,7 +9,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap">
 <style>
 /* Layout: scenario tabs, then a realistic phone (lock screen → WhatsApp chat) beside a short brief; stacks on phones */
 :root{
@@ -20,10 +20,10 @@
   --wa-in:#ffffff; --wa-out:#d9fdd3; --wa-ink:#111b21; --wa-meta:#667781;
   --wa-link:#027eb5; --wa-tick:#53bdeb; --wa-green:#008069; --wa-notice:#ffeecd; --wa-notice-ink:#54656f;
   --wa-sheet:#ffffff; --wa-compose:#f0f2f5; --wa-field:#ffffff;
-  --display:"Big Shoulders Display","Arial Narrow",sans-serif;
-  --body:"IBM Plex Sans",system-ui,sans-serif;
-  --mono:"IBM Plex Mono",ui-monospace,monospace;
-  --sys:-apple-system,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --display:"DM Sans",system-ui,sans-serif;
+  --body:"DM Sans",system-ui,sans-serif;
+  --mono:"DM Sans",system-ui,sans-serif;
+  --sys:"DM Sans",system-ui,sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#141112; --surface:#1e1a1b; --ink:#efeaea; --muted:#ab9fa1; --line:#362e30; --accent:#ef4a5c; --gold:#d4b27a; --night:#0d0c0d;
@@ -44,7 +44,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15p
 header{display:grid;gap:6px}
 .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
 header::after{content:"";display:block;width:64px;height:3px;background:var(--accent);margin-top:6px}
-h1{font-family:var(--display);font-weight:800;font-size:clamp(38px,6vw,56px);line-height:.95;margin:0;letter-spacing:.01em;text-wrap:balance}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(34px,5vw,48px);line-height:1.05;margin:0;letter-spacing:-.025em;text-wrap:balance}
 .lede{margin:0;max-width:62ch;color:var(--muted)}
 .tabs{display:flex;flex-wrap:wrap;gap:8px}
 .tab{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 14px;border-radius:999px;cursor:pointer;display:flex;gap:8px;align-items:center}
@@ -142,11 +142,11 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ---------- brief ---------- */
 .brief{display:grid;gap:22px;min-width:0}
-.brief h2{font-family:var(--display);font-weight:600;font-size:24px;letter-spacing:.02em;margin:0 0 8px;text-transform:uppercase}
+.brief h2{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.08em;margin:0 0 8px;text-transform:uppercase}
 .facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 @media (max-width:560px){.facts{grid-template-columns:minmax(0,1fr)}}
 .fact{border-top:3px solid var(--accent);background:var(--surface);padding:12px;display:grid;gap:6px;align-content:start}
-.fact .n{font-family:var(--display);font-weight:800;font-size:34px;line-height:1}
+.fact .n{font-family:var(--display);font-weight:700;font-size:30px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .fact p{margin:0;font-size:13.5px}
 .fact small{color:var(--muted);font-size:12px}
 .steps{margin:0;padding:0;list-style:none;display:grid;gap:10px;counter-reset:s}
