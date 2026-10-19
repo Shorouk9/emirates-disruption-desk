@@ -12,7 +12,7 @@ Three scenarios, each starting from a lock-screen notification:
 - **Cancellation** (Dubai → Mumbai): rebook tomorrow, rebook via a partner, or an automatic refund with a step-by-step tracker.
 - **Long delay** (Dubai → Manila): meal vouchers for a family of four, free move to tomorrow, live update for the person picking them up.
 
-Every scenario includes a "Is this really the airline?" check and a handoff to a human agent who already sees the full chat.
+Every scenario includes a "Is this really the airline?" check and a handoff to a human agent who already sees the full chat. You can reply with the buttons or type your own message (for example "refund", "talk to a person" or "is this a scam?"), with some Arabic keywords supported.
 
 ## Why
 

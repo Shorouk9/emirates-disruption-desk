@@ -118,8 +118,13 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* composer */
 .compose{display:flex;align-items:center;gap:8px;padding:6px 8px 18px;background:var(--wa-compose)}
-.field{flex:1;background:var(--wa-field);border-radius:20px;padding:8px 14px;color:var(--wa-meta);font-size:15px}
-.mic{width:40px;height:40px;border-radius:50%;background:var(--wa-green);display:grid;place-items:center;flex:none}
+.field{flex:1;min-width:0;background:var(--wa-field);border:0;border-radius:20px;padding:9px 14px;color:var(--wa-ink);font:inherit;font-family:var(--sys);font-size:15px}
+.field::placeholder{color:var(--wa-meta)}
+.field:focus{outline:none;box-shadow:0 0 0 2px var(--wa-green)}
+.mic{width:40px;height:40px;border-radius:50%;background:var(--wa-green);display:grid;place-items:center;flex:none;border:0;cursor:pointer;padding:0}
+.mic .send{display:none}
+.compose.has-text .mic .send{display:block}
+.compose.has-text .mic .rec{display:none}
 
 /* list sheet */
 .scrim{position:absolute;inset:0;background:rgba(0,0,0,.35);z-index:6;display:flex;align-items:flex-end}
@@ -160,7 +165,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   <header>
     <div class="eyebrow">Concept for Emirates · Customer experience · 2026</div>
     <h1>Disruption Desk</h1>
-    <p class="lede">When a flight is disrupted, the passenger hears from the airline first, on WhatsApp, with options they can tap instead of a phone queue. Pick a scenario, tap the notification, and reply with the buttons.</p>
+    <p class="lede">When a flight is disrupted, the passenger hears from the airline first, on WhatsApp, with options they can tap instead of a phone queue. Pick a scenario, tap the notification, then reply with the buttons or type your own message.</p>
   </header>
 
   <div class="tabs" role="tablist" aria-label="Scenarios" id="tabs"></div>
@@ -210,10 +215,13 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
           <div class="log" id="log" aria-live="polite"></div>
 
-          <div class="compose" aria-hidden="true">
-            <div class="field">Message</div>
-            <div class="mic"><svg width="16" height="20" viewBox="0 0 16 22"><rect x="4" y="1" width="8" height="13" rx="4" fill="#fff"/><path d="M1.5 10.5a6.5 6.5 0 0 0 13 0M8 17v4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
-          </div>
+          <form class="compose" id="compose" autocomplete="off">
+            <input class="field" id="msg" type="text" placeholder="Message" aria-label="Type a message" maxlength="200">
+            <button class="mic" type="submit" aria-label="Send">
+              <svg class="rec" width="16" height="20" viewBox="0 0 16 22" aria-hidden="true"><rect x="4" y="1" width="8" height="13" rx="4" fill="#fff"/><path d="M1.5 10.5a6.5 6.5 0 0 0 13 0M8 17v4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+              <svg class="send" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12.6 2-12.6 2Z"/></svg>
+            </button>
+          </form>
         </div>
       </div>
       <div class="controls"><button class="ctl" id="reset" type="button">Restart scenario</button></div>
@@ -425,10 +433,55 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     sh.querySelector(".item").focus();
   }
 
-  async function play(key, label){
+  // Typed replies: keywords map to the same steps the buttons use (English + some Arabic).
+  const sharedIntents = [
+    [/agent|human|person|someone|staff|representative|call me|speak|talk|موظف|شخص|حد/i, "human"],
+    [/real|scam|fake|verify|legit|trust|phishing|حقيقي|نصب|احتيال/i, "verify"],
+    [/refund|money back|cancel my|استرداد|فلوسي|ارجاع/i, "refund"],
+    [/compensat|claim|owed|entitled|تعويض/i, "comp"],
+    [/family|mom|mum|mother|pick ?up|pickup|tell|share|let .* know|اهلي|ماما|عيلتي/i, "share"],
+    [/option|rebook|change|another|other flight|next flight|alternative|what can|حجز|خيارات|رحلة تانية/i, "options"],
+    [/thank|bye|that'?s all|done|ok thanks|شكرا|تمام/i, "end"]
+  ];
+  const scenarioIntents = {
+    connection:[[/11[:.]?20|earliest|first|soonest|927/i,"a"],[/14[:.]?05|partner|afternoon/i,"b"],[/tomorrow|hotel|stay|sleep|night|بكرة|بكره|فندق/i,"c"],[/mom|mum|mother|ماما/i,"shared"]],
+    cancel:[[/tomorrow|09[:.]?40|morning|direct|بكرة|بكره/i,"a"],[/tonight|muscat|partner|today|النهارده/i,"b"]],
+    delay:[[/meal|food|eat|hungry|voucher|kids|dinner|أكل|اكل/i,"meals"],[/tomorrow|hotel|stay|sleep|بكرة|بكره|فندق/i,"tomorrow"],[/ben|tito/i,"shared"]]
+  };
+  function resolve(text){
+    const lists = [scenarioIntents[current.id]||[], sharedIntents];
+    for(const list of lists){ for(const [re,key] of list){ if(re.test(text) && (current.nodes[key]||shared[key])) return key; } }
+    return null;
+  }
+
+  async function typed(text){
+    run++; disableOld();
+    screen.querySelectorAll(".scrim").forEach(s=>s.remove());
+    mins += 1; setStatus(); bubble("out", text);
+    await wait(500);
+    const key = resolve(text);
+    if(key){ play(key, null, true); return; }
+    const id = ++run;
+    const t = el("div","typing"); t.append(el("i"),el("i"),el("i")); log.append(t); scroll();
+    await wait(800); if(id!==run) return; t.remove();
+    bubble("in","Sorry, I didn't catch that. You can tap an option below, or type something like *rebook*, *refund*, *compensation* or *talk to a person*.");
+    renderButtons({choices:null});
+  }
+
+  const form=$("compose"), input=$("msg");
+  input.addEventListener("input",()=>form.classList.toggle("has-text", input.value.trim()!==""));
+  form.addEventListener("submit",e=>{
+    e.preventDefault();
+    const text = input.value.trim();
+    if(!text || !lock.hidden) return;
+    input.value=""; form.classList.remove("has-text");
+    typed(text);
+  });
+
+  async function play(key, label, silent){
     const id = ++run;
     const node = current.nodes[key] || shared[key];
-    if(node.me){ mins += 1; setStatus(); bubble("out", label || node.me); await wait(500); if(id!==run) return; }
+    if(node.me && !silent){ mins += 1; setStatus(); bubble("out", label || node.me); await wait(500); if(id!==run) return; }
     for(const m of node.msgs){
       const t = el("div","typing"); t.append(el("i"),el("i"),el("i")); log.append(t); scroll();
       await wait(800); if(id!==run) return;
@@ -446,6 +499,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     $("ltime").textContent = clock(); $("ldate").textContent = current.date;
     $("npreview").textContent = current.preview;
     lock.hidden = false;
+    $("msg").value=""; $("compose").classList.remove("has-text");
     log.append(el("div","chip-day","Today"));
     log.append(el("div","notice","Messages from this business are about your booking. This business works with other companies to manage this chat."));
   }
